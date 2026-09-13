@@ -37,15 +37,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Register Routers
+# Register Routers (both with /api and direct in case Vercel rewrites strip the prefix)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(resumes.router, prefix=settings.API_V1_STR)
 app.include_router(analysis.router, prefix=settings.API_V1_STR)
 app.include_router(job_roles.router, prefix=settings.API_V1_STR)
 app.include_router(reports.router, prefix=settings.API_V1_STR)
 
+# Direct routes fallback
+app.include_router(auth.router)
+app.include_router(resumes.router)
+app.include_router(analysis.router)
+app.include_router(job_roles.router)
+app.include_router(reports.router)
+
 
 @app.get("/api/health", tags=["Health"])
+@app.get("/health", tags=["Health"])
 def health_check():
     """Health check endpoint to verify backend service status."""
     return {
