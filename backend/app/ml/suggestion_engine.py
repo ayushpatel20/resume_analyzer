@@ -1,3 +1,4 @@
+from __future__ import annotations
 class SuggestionEngine:
     """Generates ethical, actionable resume improvement suggestions based on detected gaps."""
 

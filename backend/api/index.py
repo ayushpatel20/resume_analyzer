@@ -20,6 +20,8 @@ for p in possible_dirs:
 
 try:
     from app.main import app
+    handler = app
+
 except Exception as exc:
     import traceback
     traceback.print_exc()
@@ -50,3 +52,6 @@ except Exception as exc:
                 "traceback": traceback.format_exc(),
             },
         )
+
+    handler = app
+

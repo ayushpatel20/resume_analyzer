@@ -1,3 +1,4 @@
+from __future__ import annotations
 import datetime
 import bcrypt
 from jose import jwt, JWTError
