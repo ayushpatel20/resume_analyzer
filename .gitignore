@@ -1,0 +1,40 @@
+# Environments
+backend/venv/
+venv/
+ENV/
+env/
+.venv/
+
+# Node dependencies & build
+frontend/node_modules/
+node_modules/
+frontend/dist/
+dist/
+.eslintcache
+
+# Python bytecode & cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local databases & uploads
+*.db
+*.sqlite3
+resume_analyzer.db
+uploads/*
+!uploads/.gitkeep
+reports/*
+!reports/.gitkeep
+
+# Environment variables
+.env
+.env.local
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
