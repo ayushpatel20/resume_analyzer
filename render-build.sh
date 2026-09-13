@@ -1,42 +1,25 @@
 #!/usr/bin/env bash
 # render-build.sh — Build script for Render deployment
-# Runs during the "Build Command" phase on Render
+set -e
 
-set -e  # Exit on any error
+echo "=== AI Resume Analyzer — Render Build ==="
 
-echo "=== AI Resume Analyzer — Render Build Script ==="
-echo "Working directory: $(pwd)"
-
-# ── 1. Build React frontend ─────────────────────────────────────────────────
-echo ""
-echo ">>> Step 1: Building React frontend..."
+# ── Build React frontend ─────────────────────────────────────────────────────
+echo ">>> Building React frontend..."
 cd frontend
 npm ci --prefer-offline
 npm run build
 cd ..
-echo "✓ Frontend built successfully."
+echo "✓ Frontend built."
 
-# ── 2. Copy dist into backend so FastAPI can serve it ───────────────────────
-echo ""
-echo ">>> Step 2: Copying dist/ into backend/app/dist/ ..."
+# ── Copy dist into backend/app/dist so FastAPI can serve it ─────────────────
+echo ">>> Copying dist to backend/app/dist..."
 rm -rf backend/app/dist
 cp -r frontend/dist backend/app/dist
-echo "✓ Frontend assets copied to backend/app/dist"
+echo "✓ Copied."
 
-# ── 3. Install Python dependencies ──────────────────────────────────────────
-echo ""
-echo ">>> Step 3: Installing Python dependencies..."
-cd backend
-pip install --upgrade pip
-pip install -r requirements.txt
-cd ..
-echo "✓ Python packages installed."
+# ── Create runtime directories ───────────────────────────────────────────────
+mkdir -p uploads reports
+echo "✓ Runtime dirs ready."
 
-# ── 4. Create required runtime directories ──────────────────────────────────
-echo ""
-echo ">>> Step 4: Creating runtime directories..."
-mkdir -p uploads reports data
-echo "✓ Directories ready."
-
-echo ""
-echo "=== Build complete! ==="
+echo "=== Build complete ==="
