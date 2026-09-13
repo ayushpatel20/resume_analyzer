@@ -18,8 +18,17 @@ class ReportService:
     """Generates professional, styled PDF analysis reports using ReportLab."""
 
     def __init__(self, reports_dir: Path | None = None):
-        self.reports_dir = reports_dir or settings.REPORTS_DIR
-        self.reports_dir.mkdir(parents=True, exist_ok=True)
+        self._reports_dir = reports_dir
+
+    @property
+    def reports_dir(self) -> Path:
+        p = self._reports_dir or settings.REPORTS_DIR
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        return p
+
 
     def generate_pdf_report(self, analysis_data: dict) -> Path:
         """

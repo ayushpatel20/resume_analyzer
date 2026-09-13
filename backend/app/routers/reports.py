@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.models import User, Analysis
 from app.auth.deps import get_current_user
-from app.services.report_service import report_service
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
+
 
 
 @router.get("/{analysis_id}")
@@ -46,7 +46,10 @@ def download_analysis_report(
     }
 
     try:
+        from app.services.report_service import report_service
+
         report_path = report_service.generate_pdf_report(analysis_data)
+
         return FileResponse(
             path=str(report_path),
             filename=report_path.name,

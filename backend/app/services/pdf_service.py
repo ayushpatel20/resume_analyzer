@@ -10,8 +10,17 @@ class PDFService:
     """Handles secure PDF upload, validation, and text extraction with PyMuPDF."""
 
     def __init__(self, upload_dir: Path | None = None):
-        self.upload_dir = upload_dir or settings.UPLOADS_DIR
-        self.upload_dir.mkdir(parents=True, exist_ok=True)
+        self._upload_dir = upload_dir
+
+    @property
+    def upload_dir(self) -> Path:
+        p = self._upload_dir or settings.UPLOADS_DIR
+        try:
+            p.mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        return p
+
 
     def validate_and_save(self, file: UploadFile) -> tuple[Path, str, int]:
         """

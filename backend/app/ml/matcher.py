@@ -1,8 +1,15 @@
+import math
 import re
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 from app.config import settings
 from app.ml.skill_extractor import skill_extractor
+
+# Optional scikit-learn import for local / high-performance setups
+try:
+    from sklearn.feature_extraction.text import TfidfVectorizer
+    from sklearn.metrics.pairwise import cosine_similarity
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    SKLEARN_AVAILABLE = False
 
 
 class ATSMatcher:
@@ -39,23 +46,68 @@ class ATSMatcher:
         "experience", "years", "candidate", "role", "team", "work", "job", "company"
     }
 
+    def _pure_python_tfidf_similarity(self, text1: str, text2: str) -> float:
+        """Pure-Python TF-IDF + Cosine Similarity algorithm for zero-dependency serverless environments."""
+        def tokenize(text: str) -> list[str]:
+            words = re.findall(r"\b[a-zA-Z]{3,}\b", text.lower())
+            meaningful = [w for w in words if w not in self.STOP_WORDS]
+            bigrams = [f"{meaningful[i]} {meaningful[i+1]}" for i in range(len(meaningful) - 1)]
+            return meaningful + bigrams
+
+        tokens1 = tokenize(text1)
+        tokens2 = tokenize(text2)
+        if not tokens1 or not tokens2:
+            return 0.0
+
+        set1 = set(tokens1)
+        set2 = set(tokens2)
+        vocab = set1 | set2
+        N = 2
+
+        tf1 = {t: tokens1.count(t) for t in set1}
+        tf2 = {t: tokens2.count(t) for t in set2}
+
+        vec1, vec2 = {}, {}
+        for t in vocab:
+            df = (1 if t in set1 else 0) + (1 if t in set2 else 0)
+            idf = math.log((1 + N) / (1 + df)) + 1.0
+            if t in tf1:
+                vec1[t] = (1 + math.log(tf1[t])) * idf
+            if t in tf2:
+                vec2[t] = (1 + math.log(tf2[t])) * idf
+
+        norm1 = math.sqrt(sum(v * v for v in vec1.values()))
+        norm2 = math.sqrt(sum(v * v for v in vec2.values()))
+        if norm1 == 0 or norm2 == 0:
+            return 0.0
+
+        dot = sum(vec1.get(k, 0) * vec2.get(k, 0) for k in vocab)
+        return round(float(dot / (norm1 * norm2)) * 100, 1)
+
     def compute_semantic_similarity(self, resume_text: str, jd_text: str) -> float:
         """Compute TF-IDF Cosine Similarity between resume and job description."""
         if not resume_text or not jd_text:
             return 0.0
 
+        if SKLEARN_AVAILABLE:
+            try:
+                vectorizer = TfidfVectorizer(
+                    stop_words="english",
+                    ngram_range=(1, 2),
+                    max_features=2500,
+                )
+                tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
+                similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
+                return round(float(similarity) * 100, 1)
+            except Exception:
+                pass
+
+        # Robust pure-python TF-IDF cosine similarity fallback
         try:
-            vectorizer = TfidfVectorizer(
-                stop_words="english",
-                ngram_range=(1, 2),
-                max_features=2500,
-            )
-            tfidf_matrix = vectorizer.fit_transform([resume_text, jd_text])
-            similarity = cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0]
-            # Convert 0.0-1.0 to percentage 0-100
-            return round(float(similarity) * 100, 1)
+            return self._pure_python_tfidf_similarity(resume_text, jd_text)
         except Exception:
             return 0.0
+
 
     def extract_keywords(self, text: str, max_keywords: int = 25) -> list[str]:
         """Extract top representative keywords from job description."""

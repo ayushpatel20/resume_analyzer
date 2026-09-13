@@ -8,8 +8,11 @@ from app.routers import auth, resumes, analysis, job_roles, reports
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize database tables on startup
-    init_db()
+    # Safely initialize database tables on startup if available
+    try:
+        init_db()
+    except Exception as e:
+        print(f"Lifespan init warning: {e}")
     yield
 
 
@@ -22,7 +25,7 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS Configuration for local React Vite frontend
+# CORS Configuration for local React Vite frontend and production deployments
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -30,12 +33,32 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://localhost:3000",
         "http://127.0.0.1:3000",
-        "*",  # Allow all for seamless local development
+        "*",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Minimal Health Check Endpoints defined FIRST for immediate serverless invocation
+@app.get("/api/health", tags=["Health"])
+@app.get("/health", tags=["Health"])
+def health_check():
+    """Minimal health check endpoint for zero-overhead verification of backend status."""
+    return {"status": "healthy"}
+
+
+@app.get("/", tags=["Root"])
+def root():
+    """Root landing endpoint."""
+    return {
+        "message": f"Welcome to {settings.PROJECT_NAME} API",
+        "status": "healthy",
+        "documentation": "/docs",
+        "health": "/api/health",
+    }
+
 
 # Register Routers (both with /api and direct in case Vercel rewrites strip the prefix)
 app.include_router(auth.router, prefix=settings.API_V1_STR)
@@ -51,23 +74,3 @@ app.include_router(analysis.router)
 app.include_router(job_roles.router)
 app.include_router(reports.router)
 
-
-@app.get("/api/health", tags=["Health"])
-@app.get("/health", tags=["Health"])
-def health_check():
-    """Health check endpoint to verify backend service status."""
-    return {
-        "status": "healthy",
-        "service": settings.PROJECT_NAME,
-        "version": settings.VERSION,
-    }
-
-
-@app.get("/", tags=["Root"])
-def root():
-    """Root landing endpoint with interactive documentation link."""
-    return {
-        "message": f"Welcome to {settings.PROJECT_NAME} API",
-        "documentation": "/docs",
-        "health": "/api/health",
-    }

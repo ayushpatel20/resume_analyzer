@@ -18,16 +18,28 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 
+_db_initialized = False
+
+
+def init_db():
+    """Create all database tables safely."""
+    global _db_initialized
+    try:
+        from app.models import models  # noqa: F401
+        Base.metadata.create_all(bind=engine)
+        _db_initialized = True
+    except Exception as e:
+        print(f"init_db safe warning: {e}")
+
+
 def get_db():
     """Dependency that yields a database session and closes it afterwards."""
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
     db = SessionLocal()
     try:
         yield db
     finally:
         db.close()
 
-
-def init_db():
-    """Create all database tables."""
-    from app.models import models  # noqa: F401
-    Base.metadata.create_all(bind=engine)

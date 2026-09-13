@@ -2,15 +2,16 @@ import os
 import sys
 from pathlib import Path
 
+# Ensure VERCEL environment flag is set
 os.environ["VERCEL"] = "1"
 
+# Dynamically locate and prepend paths where 'app' might reside
 curr_file = Path(__file__).resolve()
 possible_dirs = [
-    curr_file.parent.parent.parent / "backend",
-    curr_file.parent.parent / "backend",
-    curr_file.parent.parent.parent,
-    Path("/var/task/backend"),
+    curr_file.parent.parent,  # backend/
+    curr_file.parent,         # backend/api/
     Path("/var/task"),
+    Path("/var/task/backend"),
 ]
 
 for p in possible_dirs:
@@ -23,6 +24,7 @@ except Exception as exc:
     import traceback
     traceback.print_exc()
 
+    # Diagnostic ASGI fallback to expose exact error instead of opaque FUNCTION_INVOCATION_FAILED
     from fastapi import FastAPI
     from fastapi.responses import JSONResponse
 

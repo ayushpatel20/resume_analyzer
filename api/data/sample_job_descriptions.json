@@ -1,0 +1,27 @@
+{
+  "Data Analyst": {
+    "title": "Junior / Associate Data Analyst",
+    "company": "Nexus Analytics Corp",
+    "description": "We are seeking a detail-oriented Data Analyst to interpret complex datasets and deliver actionable business insights.\n\nKey Responsibilities:\n- Query relational databases using SQL to extract and transform large datasets.\n- Perform statistical analysis and exploratory data analysis using Python, Pandas, and NumPy.\n- Design and publish interactive dashboards and KPI reports using Power BI, Tableau, and Excel.\n- Work collaboratively with cross-functional product teams to define metrics and automate routine reporting.\n\nRequired Qualifications:\n- Bachelor's degree in Computer Science, Statistics, Mathematics, or a related field.\n- Strong proficiency in SQL and Python (Pandas, Matplotlib, Seaborn).\n- Hands-on experience building business dashboards in Power BI or Tableau.\n- Solid understanding of core statistical concepts and data cleaning methodologies.\n- Experience with Git version control is preferred."
+  },
+  "Data Scientist": {
+    "title": "Data Scientist",
+    "company": "Insightful AI Labs",
+    "description": "Join our AI research team as a Data Scientist building predictive models and statistical algorithms for enterprise analytics.\n\nKey Responsibilities:\n- Formulate data science problems and translate business challenges into machine learning solutions.\n- Perform feature engineering, exploratory data analysis, and data preprocessing on structured and unstructured datasets.\n- Train, evaluate, and fine-tune machine learning models using Scikit-learn, XGBoost, and Python.\n- Write SQL queries to extract data from PostgreSQL and data lakes.\n- Collaborate with ML engineers to deploy models into production environments via Docker.\n\nRequired Skills:\n- Proficiency in Python, NumPy, Pandas, and Scikit-learn.\n- Solid mathematical grounding in Statistics, Probability, and Machine Learning algorithms.\n- Hands-on experience with SQL databases and Git.\n- Familiarity with Deep Learning frameworks (TensorFlow or PyTorch) is a strong plus."
+  },
+  "Python Developer": {
+    "title": "Backend Python Developer",
+    "company": "CloudScale Systems",
+    "description": "We are looking for a skilled Python Backend Developer to design, build, and maintain high-performance RESTful APIs and distributed microservices.\n\nResponsibilities:\n- Develop asynchronous REST APIs using FastAPI or Django/Flask.\n- Design and optimize relational database schemas using PostgreSQL, SQLAlchemy, and Redis caching.\n- Write clean, maintainable, and well-tested code with Pytest and unit testing best practices.\n- Containerize applications using Docker and participate in CI/CD pipeline automation.\n- Collaborate using Git and GitHub in an Agile sprint environment.\n\nRequirements:\n- 1+ years experience developing backend applications in Python.\n- Strong expertise in FastAPI, Flask, or Django.\n- Strong database knowledge including SQL, PostgreSQL, and ORM tools.\n- Familiarity with Docker, Linux environment, Git, and REST API design."
+  },
+  "Machine Learning Engineer": {
+    "title": "Machine Learning Engineer",
+    "company": "Cortex Intelligence",
+    "description": "Cortex Intelligence is hiring a Machine Learning Engineer to bridge the gap between machine learning models and robust production systems.\n\nResponsibilities:\n- Design, train, evaluate, and operationalize deep learning and machine learning models.\n- Implement Natural Language Processing (NLP) or Computer Vision pipelines using PyTorch or TensorFlow.\n- Deploy models as scalable microservices using FastAPI, Docker, and Kubernetes.\n- Implement MLOps best practices, monitoring model drift, and automating retraining workflows.\n\nQualifications:\n- Strong programming fundamentals in Python and object-oriented architecture.\n- Demonstrated experience with PyTorch or TensorFlow and Scikit-learn.\n- Experience deploying models with Docker and container workflows.\n- Good knowledge of Git, Linux, and REST APIs."
+  },
+  "Software Developer": {
+    "title": "Software Development Engineer (SDE)",
+    "company": "Apex Infotech",
+    "description": "We are seeking a versatile Software Developer with strong foundation in computer science and algorithmic problem-solving.\n\nResponsibilities:\n- Develop, test, and maintain client-server software components.\n- Write efficient, testable, and robust code in Python, Java, or C++.\n- Implement data structures and algorithms to solve complex data processing problems.\n- Participate in code reviews, system design discussions, and Agile sprints.\n\nRequirements:\n- Strong foundation in Data Structures, Algorithms, and Object-Oriented Programming.\n- Proficiency in at least one modern language: Python, Java, or C++.\n- Experience with SQL databases and Git version control.\n- Understanding of REST APIs and software development life cycle (SDLC)."
+  }
+}

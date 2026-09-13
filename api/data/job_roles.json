@@ -1,0 +1,42 @@
+{
+  "Data Analyst": {
+    "description": "Analyzes raw data to uncover insights, build dashboards, and support business decision-making.",
+    "required_skills": ["SQL", "Python", "Excel", "Power BI", "Pandas", "Statistics", "Data Visualization"],
+    "preferred_skills": ["Tableau", "Matplotlib", "Seaborn", "Data Cleaning", "Git"]
+  },
+  "Data Scientist": {
+    "description": "Applies statistical modeling, machine learning, and data analytics to solve complex business challenges.",
+    "required_skills": ["Python", "SQL", "Machine Learning", "Pandas", "NumPy", "Scikit-learn", "Statistics"],
+    "preferred_skills": ["Deep Learning", "Data Visualization", "Matplotlib", "Seaborn", "Git", "Docker"]
+  },
+  "Machine Learning Engineer": {
+    "description": "Designs, trains, deploys, and scales machine learning models into production software systems.",
+    "required_skills": ["Python", "Machine Learning", "TensorFlow", "PyTorch", "Docker", "Git", "Scikit-learn"],
+    "preferred_skills": ["Deep Learning", "FastAPI", "Kubernetes", "CI/CD", "Linux", "REST API", "SQL"]
+  },
+  "Python Developer": {
+    "description": "Builds backend architectures, robust REST APIs, microservices, and automation pipelines with Python.",
+    "required_skills": ["Python", "FastAPI", "Flask", "Django", "SQL", "Git", "REST API"],
+    "preferred_skills": ["PostgreSQL", "Docker", "Redis", "Unit Testing", "Pytest", "Linux"]
+  },
+  "Software Developer": {
+    "description": "Develops robust application software, applying algorithmic problem solving and solid engineering principles.",
+    "required_skills": ["Python", "Java", "C++", "Data Structures", "Algorithms", "Git", "SQL"],
+    "preferred_skills": ["Object-Oriented Programming", "REST API", "Docker", "Linux", "Unit Testing"]
+  },
+  "AI Engineer": {
+    "description": "Specializes in developing state-of-the-art AI solutions, generative AI, LLM integration, and neural architectures.",
+    "required_skills": ["Python", "Machine Learning", "Deep Learning", "NLP", "TensorFlow", "PyTorch", "Git"],
+    "preferred_skills": ["Hugging Face", "LLM", "Computer Vision", "Docker", "FastAPI", "PostgreSQL"]
+  },
+  "Full Stack Developer": {
+    "description": "Builds both user-facing modern frontend applications and performant backend services.",
+    "required_skills": ["JavaScript", "React", "Node.js", "HTML", "CSS", "SQL", "Git", "REST API"],
+    "preferred_skills": ["TypeScript", "FastAPI", "PostgreSQL", "MongoDB", "Docker", "Tailwind CSS"]
+  },
+  "DevOps Engineer": {
+    "description": "Automates deployments, manages cloud infrastructure, and oversees continuous integration pipelines.",
+    "required_skills": ["Docker", "Kubernetes", "AWS", "CI/CD", "Linux", "Git", "Bash"],
+    "preferred_skills": ["Terraform", "Python", "Jenkins", "Nginx", "Azure", "GCP"]
+  }
+}

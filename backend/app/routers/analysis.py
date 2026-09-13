@@ -18,15 +18,30 @@ from app.schemas.analysis import (
     SuggestionOut,
 )
 from app.auth.deps import get_current_user
-from app.services.pdf_service import pdf_service
-from app.ml.info_extractor import info_extractor
-from app.ml.section_parser import section_parser
-from app.ml.matcher import ats_matcher
-from app.ml.scorer import resume_scorer
-from app.ml.recommender import job_recommender
-from app.ml.suggestion_engine import suggestion_engine
 
 router = APIRouter(prefix="/analysis", tags=["Analysis"])
+
+
+def _get_ml_services():
+    """Lazily import and return ML and PDF processing services to ensure fast, safe serverless startup."""
+    from app.services.pdf_service import pdf_service
+    from app.ml.info_extractor import info_extractor
+    from app.ml.section_parser import section_parser
+    from app.ml.matcher import ats_matcher
+    from app.ml.scorer import resume_scorer
+    from app.ml.recommender import job_recommender
+    from app.ml.suggestion_engine import suggestion_engine
+
+    return (
+        pdf_service,
+        info_extractor,
+        section_parser,
+        ats_matcher,
+        resume_scorer,
+        job_recommender,
+        suggestion_engine,
+    )
+
 
 
 def _build_analysis_detail(analysis: Analysis) -> AnalysisDetailOut:
@@ -100,10 +115,22 @@ async def analyze_resume(
             detail="Job description must be at least 10 characters long.",
         )
 
+    # 0. Lazy-load ML services
+    (
+        pdf_service,
+        info_extractor,
+        section_parser,
+        ats_matcher,
+        resume_scorer,
+        job_recommender,
+        suggestion_engine,
+    ) = _get_ml_services()
+
     # 1. Resolve resume record and extracted text
     resume: Resume | None = None
     if resume_file:
         saved_path, original_filename, file_size = pdf_service.validate_and_save(resume_file)
+
         extracted_text = pdf_service.extract_text(saved_path)
 
         resume = Resume(

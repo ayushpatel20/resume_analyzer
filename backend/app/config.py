@@ -2,15 +2,18 @@ import os
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+APP_DIR = Path(__file__).resolve().parent
+BASE_DIR = APP_DIR.parent.parent
 
-# Resolve DATA_DIR (works both in local backend/ and root api/ on Vercel)
-if (BASE_DIR / "data").exists():
+# Resolve DATA_DIR (prioritize self-contained app/data, then project root data)
+if (APP_DIR / "data").exists():
+    DATA_DIR = APP_DIR / "data"
+elif (BASE_DIR / "data").exists():
     DATA_DIR = BASE_DIR / "data"
 elif (Path(__file__).resolve().parent.parent.parent.parent / "data").exists():
     DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
 else:
-    DATA_DIR = BASE_DIR / "data"
+    DATA_DIR = APP_DIR / "data"
 
 # Check if running in serverless environment (Vercel / AWS Lambda with read-only root)
 IS_SERVERLESS = (
@@ -28,12 +31,6 @@ else:
     REPORTS_DIR = BASE_DIR / "reports"
     DEFAULT_DB_URL = f"sqlite:///{BASE_DIR / 'resume_analyzer.db'}"
 
-# Ensure runtime directories exist safely
-try:
-    UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-except Exception:
-    pass
 
 
 class Settings(BaseSettings):
