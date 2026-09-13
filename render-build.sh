@@ -3,25 +3,26 @@
 set -e
 
 echo "=== AI Resume Analyzer — Render Build ==="
-echo "Node: $(node --version), npm: $(npm --version)"
 
-# ── Build React frontend ─────────────────────────────────────────────────────
-echo ">>> Installing frontend dependencies..."
-cd frontend
-npm install
-echo ">>> Building React app..."
-npm run build
-cd ..
-echo "✓ Frontend built."
+# 1. Install Python dependencies
+echo ">>> Installing Python requirements..."
+pip install -r requirements.txt
 
-# ── Copy dist into backend/app/dist so FastAPI can serve it ─────────────────
-echo ">>> Copying dist to backend/app/dist..."
-rm -rf backend/app/dist
-cp -r frontend/dist backend/app/dist
-echo "✓ Copied to backend/app/dist"
+# 2. Check if pre-built frontend dist exists; if missing, build React app
+if [ ! -f "backend/app/dist/index.html" ]; then
+  echo ">>> Pre-built frontend not found. Building React app..."
+  cd frontend
+  npm install --include=dev
+  npm run build
+  cd ..
+  mkdir -p backend/app/dist
+  cp -r frontend/dist/* backend/app/dist/
+else
+  echo "✓ Pre-built frontend found in backend/app/dist."
+fi
 
-# ── Create runtime directories ───────────────────────────────────────────────
+# 3. Create runtime directories
 mkdir -p uploads reports
-echo "✓ Runtime dirs ready."
+echo "✓ Runtime directories ready."
 
 echo "=== Build complete ==="
