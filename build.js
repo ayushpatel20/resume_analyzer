@@ -21,13 +21,19 @@ const parentDistDir = path.join(process.cwd(), '..', 'dist');
 
 if (fs.existsSync(distDir)) {
   try {
-    if (!fs.existsSync(parentDistDir) && path.basename(process.cwd()) === 'frontend') {
-      fs.cpSync(distDir, parentDistDir, { recursive: true });
-      console.log('Copied dist to root directory for Vercel deployment.');
+    const targets = [
+      parentDistDir,
+      path.join(process.cwd(), '..', 'backend', 'dist'),
+      path.join(process.cwd(), '..', 'backend', 'app', 'dist'),
+    ];
+    for (const target of targets) {
+      fs.cpSync(distDir, target, { recursive: true });
     }
+    console.log('Mirrored dist to root and backend directories for Vercel deployment.');
   } catch (err) {
-    console.log('Note: Skipping dist copy (already at root or permissions restricted)');
+    console.log('Note: Skipping dist copy:', err.message);
   }
 }
+
 
 console.log('Build completed successfully.');

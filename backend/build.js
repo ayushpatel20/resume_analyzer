@@ -10,13 +10,15 @@ if (fs.existsSync(frontendDir)) {
   console.log('Building Vite React frontend...');
   execSync('npm install && npm run build', { stdio: 'inherit' });
   
-  // Copy dist to backend/dist so Vercel can find the output if root is backend
   const frontendDist = path.join(frontendDir, 'dist');
   const backendDist = path.resolve(__dirname, 'dist');
+  const appDist = path.resolve(__dirname, 'app', 'dist');
   if (fs.existsSync(frontendDist)) {
     fs.cpSync(frontendDist, backendDist, { recursive: true });
-    console.log('Copied dist to backend/dist for Vercel.');
+    fs.cpSync(frontendDist, appDist, { recursive: true });
+    console.log('Copied dist to backend/dist and backend/app/dist for Vercel.');
   }
+
 } else {
   console.log('Frontend directory not found at', frontendDir);
 }
