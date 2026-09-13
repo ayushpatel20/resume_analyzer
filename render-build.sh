@@ -3,11 +3,13 @@
 set -e
 
 echo "=== AI Resume Analyzer — Render Build ==="
+echo "Node: $(node --version), npm: $(npm --version)"
 
 # ── Build React frontend ─────────────────────────────────────────────────────
-echo ">>> Building React frontend..."
+echo ">>> Installing frontend dependencies..."
 cd frontend
-npm ci --prefer-offline
+npm install
+echo ">>> Building React app..."
 npm run build
 cd ..
 echo "✓ Frontend built."
@@ -16,7 +18,7 @@ echo "✓ Frontend built."
 echo ">>> Copying dist to backend/app/dist..."
 rm -rf backend/app/dist
 cp -r frontend/dist backend/app/dist
-echo "✓ Copied."
+echo "✓ Copied to backend/app/dist"
 
 # ── Create runtime directories ───────────────────────────────────────────────
 mkdir -p uploads reports
