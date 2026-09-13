@@ -1,9 +1,19 @@
 {
   "buildCommand": "node build.js",
   "outputDirectory": "dist",
+  "functions": {
+    "api/**/*.py": {
+      "memory": 1024,
+      "maxDuration": 60
+    },
+    "api/index.py": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
     {
-      "source": "/api/:path*",
+      "source": "/api/(.*)",
       "destination": "/api/index.py"
     },
     {

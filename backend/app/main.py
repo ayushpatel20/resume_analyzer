@@ -21,24 +21,14 @@ from app.database import init_db
 from app.routers import auth, resumes, analysis, job_roles, reports
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Safely initialize database tables on startup if available
-    try:
-        init_db()
-    except Exception as e:
-        print(f"Lifespan init warning: {e}")
-    yield
-
-
 app = FastAPI(
     title=settings.PROJECT_NAME,
     version=settings.VERSION,
     description="Full-stack AI Resume Analyzer and Job Matching System (7th Semester B.Tech Mini Project)",
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan,
 )
+
 
 # CORS Configuration for local React Vite frontend and production deployments
 app.add_middleware(
