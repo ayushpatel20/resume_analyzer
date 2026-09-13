@@ -5,11 +5,11 @@ services:
     runtime: python
     region: oregon           # Free tier region
 
-    # Build: install Python deps & prepare directories
+    # Build: install Node, build React, install Python deps
     buildCommand: "bash render-build.sh"
 
-    # Start: run uvicorn root entry point
-    startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT"
+    # Start: run uvicorn from the backend directory
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
 
     # Health check — Render pings this to verify the service is up
     healthCheckPath: /api/health
