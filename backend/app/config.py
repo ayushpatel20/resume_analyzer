@@ -3,13 +3,37 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
-DATA_DIR = BASE_DIR / "data"
-UPLOADS_DIR = BASE_DIR / "uploads"
-REPORTS_DIR = BASE_DIR / "reports"
 
-# Ensure runtime directories exist
-UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
-REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+# Resolve DATA_DIR (works both in local backend/ and root api/ on Vercel)
+if (BASE_DIR / "data").exists():
+    DATA_DIR = BASE_DIR / "data"
+elif (Path(__file__).resolve().parent.parent.parent.parent / "data").exists():
+    DATA_DIR = Path(__file__).resolve().parent.parent.parent.parent / "data"
+else:
+    DATA_DIR = BASE_DIR / "data"
+
+# Check if running in serverless environment (Vercel / AWS Lambda with read-only root)
+IS_SERVERLESS = (
+    os.getenv("VERCEL") == "1"
+    or os.getenv("AWS_LAMBDA_FUNCTION_NAME") is not None
+    or not os.access(str(BASE_DIR), os.W_OK)
+)
+
+if IS_SERVERLESS:
+    UPLOADS_DIR = Path("/tmp/uploads")
+    REPORTS_DIR = Path("/tmp/reports")
+    DEFAULT_DB_URL = "sqlite:////tmp/resume_analyzer.db"
+else:
+    UPLOADS_DIR = BASE_DIR / "uploads"
+    REPORTS_DIR = BASE_DIR / "reports"
+    DEFAULT_DB_URL = f"sqlite:///{BASE_DIR / 'resume_analyzer.db'}"
+
+# Ensure runtime directories exist safely
+try:
+    UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+except Exception:
+    pass
 
 
 class Settings(BaseSettings):
@@ -22,8 +46,8 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
 
-    # Database: SQLite default for seamless local setup, PostgreSQL supported via env
-    DATABASE_URL: str = os.getenv("DATABASE_URL", f"sqlite:///{BASE_DIR / 'resume_analyzer.db'}")
+    # Database: SQLite default (uses /tmp on serverless, local file in dev)
+    DATABASE_URL: str = os.getenv("DATABASE_URL", DEFAULT_DB_URL)
 
     # File Upload Limits
     MAX_UPLOAD_SIZE_BYTES: int = 10 * 1024 * 1024  # 10 MB
