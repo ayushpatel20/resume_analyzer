@@ -2,13 +2,14 @@ from __future__ import annotations
 import os
 import sys
 from pathlib import Path
-from contextlib import asynccontextmanager
 
-# Add backend and root directories to sys.path so 'app' imports seamlessly in any environment
-_app_dir = Path(__file__).resolve().parent
-_backend_dir = _app_dir.parent
-_root_dir = _backend_dir.parent
-for _p in [_backend_dir, _root_dir, _app_dir, Path("/var/task"), Path("/var/task/backend")]:
+# ── sys.path bootstrap (works for Render, Vercel, local) ──────────────────
+_app_dir = Path(__file__).resolve().parent      # backend/app/
+_backend_dir = _app_dir.parent                  # backend/
+_root_dir = _backend_dir.parent                 # project root
+
+for _p in [_backend_dir, _root_dir, _app_dir,
+           Path("/var/task"), Path("/var/task/backend")]:
     if _p.exists() and str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
@@ -20,6 +21,11 @@ from app.config import settings
 from app.database import init_db
 from app.routers import auth, resumes, analysis, job_roles, reports
 
+# ── Initialize database on startup ─────────────────────────────────────────
+try:
+    init_db()
+except Exception as _e:
+    print(f"[WARN] DB init error (will retry on first request): {_e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -29,53 +35,40 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-
-# CORS Configuration for local React Vite frontend and production deployments
+# ── CORS ────────────────────────────────────────────────────────────────────
+# Allow all origins so the app works on any Render/Vercel/local URL
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "*",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-
-# Minimal Health Check Endpoints defined FIRST for immediate serverless invocation
+# ── Health Check (first, fastest route) ────────────────────────────────────
 @app.get("/api/health", tags=["Health"])
 @app.get("/health", tags=["Health"])
 def health_check():
-    """Minimal health check endpoint for zero-overhead verification of backend status."""
-    return {"status": "healthy"}
+    """Zero-overhead health check for Render's health-check ping."""
+    return {"status": "healthy", "service": settings.PROJECT_NAME}
 
 
-# Register Routers (both with /api and direct in case Vercel rewrites strip the prefix)
-app.include_router(auth.router, prefix=settings.API_V1_STR)
-app.include_router(resumes.router, prefix=settings.API_V1_STR)
-app.include_router(analysis.router, prefix=settings.API_V1_STR)
-app.include_router(job_roles.router, prefix=settings.API_V1_STR)
-app.include_router(reports.router, prefix=settings.API_V1_STR)
+# ── API Routers ─────────────────────────────────────────────────────────────
+app.include_router(auth.router,       prefix=settings.API_V1_STR)
+app.include_router(resumes.router,    prefix=settings.API_V1_STR)
+app.include_router(analysis.router,   prefix=settings.API_V1_STR)
+app.include_router(job_roles.router,  prefix=settings.API_V1_STR)
+app.include_router(reports.router,    prefix=settings.API_V1_STR)
 
-# Direct routes fallback
-app.include_router(auth.router)
-app.include_router(resumes.router)
-app.include_router(analysis.router)
-app.include_router(job_roles.router)
-app.include_router(reports.router)
 
-# Resolve dist directory for static files and SPA serving
+# ── Resolve the React dist/ directory ──────────────────────────────────────
 _dist_candidates = [
-    _app_dir / "dist",
-    _backend_dir / "dist",
-    _root_dir / "dist",
+    _app_dir / "dist",          # backend/app/dist  ← set by render-build.sh
+    _backend_dir / "dist",      # backend/dist
+    _root_dir / "dist",         # project root dist
+    _root_dir / "frontend" / "dist",
     Path("/var/task/app/dist"),
     Path("/var/task/dist"),
-    Path("/var/task/backend/dist"),
 ]
 _dist_dir: Path | None = None
 for _d in _dist_candidates:
@@ -83,38 +76,48 @@ for _d in _dist_candidates:
         _dist_dir = _d
         break
 
+if _dist_dir:
+    # Mount static assets (JS/CSS bundles) — must be before catch-all
+    _assets = _dist_dir / "assets"
+    if _assets.exists():
+        app.mount("/assets", StaticFiles(directory=str(_assets)), name="assets")
+    print(f"[INFO] Serving React frontend from: {_dist_dir}")
+else:
+    print("[WARN] React dist/ not found — API-only mode.")
 
-if _dist_dir and (_dist_dir / "assets").exists():
-    app.mount("/assets", StaticFiles(directory=str(_dist_dir / "assets")), name="assets")
 
-
-@app.get("/", tags=["Root"])
+# ── SPA Root & Catch-all ────────────────────────────────────────────────────
+@app.get("/", tags=["Frontend"])
 def root():
-    """Serve React frontend index.html if available, else return status."""
+    """Serve the React SPA index.html."""
     if _dist_dir and (_dist_dir / "index.html").exists():
         return FileResponse(str(_dist_dir / "index.html"))
     return {
         "message": f"Welcome to {settings.PROJECT_NAME} API",
-        "status": "healthy",
-        "documentation": "/docs",
+        "docs": "/docs",
         "health": "/api/health",
     }
 
 
-@app.get("/{full_path:path}")
-def catch_all_spa(full_path: str):
-    """Serve SPA routes or static files for frontend routing."""
-    if full_path.startswith("api/") or full_path == "api":
-        return JSONResponse(status_code=404, content={"detail": "API route not found"})
+@app.get("/{full_path:path}", tags=["Frontend"])
+def spa_catch_all(full_path: str):
+    """Serve SPA routes; let the React router handle client-side navigation."""
+    # Don't intercept API routes
+    if full_path.startswith("api/") or full_path in ("api", "docs", "redoc"):
+        return JSONResponse(status_code=404, content={"detail": "Not found"})
+
     if _dist_dir:
+        # Serve existing static file (favicon, manifest, etc.)
         static_file = _dist_dir / full_path
         if static_file.is_file():
             return FileResponse(str(static_file))
-        index_file = _dist_dir / "index.html"
-        if index_file.exists():
-            return FileResponse(str(index_file))
+        # Fall back to index.html for React Router routes
+        idx = _dist_dir / "index.html"
+        if idx.exists():
+            return FileResponse(str(idx))
+
     return JSONResponse(status_code=404, content={"detail": "Not found"})
 
 
-# Expose handler for Vercel Serverless Function runtime
+# Expose ASGI handler for serverless adapters (Vercel etc.)
 handler = app

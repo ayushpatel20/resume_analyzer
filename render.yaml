@@ -1,0 +1,30 @@
+services:
+  # ── Unified Web Service (FastAPI serves React frontend + API) ──────────────
+  - type: web
+    name: ai-resume-analyzer
+    runtime: python
+    region: oregon           # Free tier region
+
+    # Build: install Node, build React, install Python deps
+    buildCommand: "bash render-build.sh"
+
+    # Start: run uvicorn from the backend directory
+    startCommand: "cd backend && uvicorn app.main:app --host 0.0.0.0 --port $PORT"
+
+    # Health check — Render pings this to verify the service is up
+    healthCheckPath: /api/health
+
+    # Environment variables
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11"
+      - key: SECRET_KEY
+        generateValue: true     # Render auto-generates a secure random value
+      - key: DATABASE_URL
+        value: sqlite:////tmp/resume_analyzer.db
+
+    # Persistent disk so uploads & DB survive restarts (optional, free plan = ephemeral)
+    # disk:
+    #   name: resume-data
+    #   mountPath: /data
+    #   sizeGB: 1
